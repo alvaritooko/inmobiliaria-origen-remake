@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase, uploadPropertyImage } from '../../lib/supabase';
 import { useAuth } from '../auth/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Upload, X, Loader2, Save, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Upload, X, Loader2, Save, Image as ImageIcon, Video } from 'lucide-react';
 
 const PropertyForm = () => {
     const { id } = useParams();
@@ -33,7 +33,15 @@ const PropertyForm = () => {
         bathrooms: 0,
         area_m2: '',
         images: [],
+        video_url: '',
     });
+
+    // Extract YouTube video ID from various URL formats
+    const getYouTubeId = (url) => {
+        if (!url) return null;
+        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([\w-]{11})/);
+        return match ? match[1] : null;
+    };
 
     useEffect(() => {
         if (isEditing) {
@@ -72,6 +80,7 @@ const PropertyForm = () => {
             bathrooms: data.bathrooms || 0,
             area_m2: data.area_m2 || '',
             images: data.images || [],
+            video_url: data.video_url || '',
         });
         setLoading(false);
     };
@@ -142,6 +151,7 @@ const PropertyForm = () => {
                 bathrooms: Number(form.bathrooms),
                 area_m2: form.area_m2 ? Number(form.area_m2) : null,
                 images: allImages,
+                video_url: form.video_url || null,
                 updated_at: new Date().toISOString(),
             };
 
@@ -445,6 +455,54 @@ const PropertyForm = () => {
                             className="hidden"
                         />
                     </label>
+                </div>
+
+                {/* Video YouTube */}
+                <div className="bg-white rounded-sm shadow-sm border border-gray-100 p-8 space-y-6">
+                    <h2 className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary-400 mb-4">Video de YouTube</h2>
+
+                    <div>
+                        <label className="text-[10px] uppercase font-bold tracking-widest text-primary-950 block mb-2">Link del video</label>
+                        <div className="relative">
+                            <Video size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-300" />
+                            <input
+                                type="url"
+                                value={form.video_url}
+                                onChange={(e) => handleChange('video_url', e.target.value)}
+                                className="w-full pl-11 pr-4 py-3 border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-primary-300 transition-colors"
+                                placeholder="https://www.youtube.com/watch?v=..."
+                            />
+                        </div>
+                        <p className="text-[10px] text-primary-300 mt-2">
+                            Pegá el link de YouTube. El video se reproduce desde YouTube, no ocupa espacio en la base de datos.
+                        </p>
+                    </div>
+
+                    {/* Video Preview */}
+                    {getYouTubeId(form.video_url) && !saving && (
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[10px] uppercase font-bold tracking-widest text-primary-950">Preview</span>
+                                <button
+                                    type="button"
+                                    onClick={() => handleChange('video_url', '')}
+                                    className="text-[10px] uppercase font-bold tracking-widest text-red-400 hover:text-red-600 transition-colors"
+                                >
+                                    Quitar video
+                                </button>
+                            </div>
+                            <div className="aspect-video rounded-sm overflow-hidden border border-gray-100">
+                                <iframe
+                                    src={`https://www.youtube.com/embed/${getYouTubeId(form.video_url)}`}
+                                    title="Video preview"
+                                    className="w-full h-full"
+                                    loading="lazy"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Submit */}

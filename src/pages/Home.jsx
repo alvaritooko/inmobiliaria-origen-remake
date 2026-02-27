@@ -210,7 +210,7 @@ const Home = () => {
                 <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-20 mb-32">
                     <div className="col-span-2 space-y-8">
                         <div className="flex items-center gap-3">
-                            <img src="/origen_logo_negro.png" alt="Origen Inmobiliaria" className="h-8 w-auto" />
+                            <img src="/origen_logo_color.png" alt="Origen Inmobiliaria" className="h-8 w-auto" />
                         </div>
                         <p className="text-primary-400 max-w-xs font-light leading-relaxed text-sm">
                             La inmobiliaria boutique líder en propiedades de lujo y diseño contemporáneo. Especialistas en hacer realidad lo extraordinario.

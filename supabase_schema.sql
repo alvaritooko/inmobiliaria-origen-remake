@@ -75,6 +75,7 @@ CREATE TABLE properties (
   bedrooms INTEGER DEFAULT 0,
   bathrooms INTEGER DEFAULT 0,
   area_m2 NUMERIC,
+  video_url TEXT,
   features JSONB DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()

@@ -79,7 +79,7 @@ const AdminDashboard = () => {
             {/* Sidebar */}
             <aside className="w-64 bg-primary-950 text-white flex flex-col p-8 flex-shrink-0">
                 <Link to="/" className="mb-16 hover:opacity-80 transition-opacity">
-                    <img src="/origen_logo_negro.png" alt="Origen Admin" className="h-8 w-auto brightness-0 invert" />
+                    <img src="/origen_logo_color.png" alt="Origen Admin" className="h-8 w-auto brightness-0 invert" />
                     <span className="text-[10px] font-display font-bold tracking-[0.3em] uppercase opacity-40 mt-3 block">Panel Administrativo</span>
                 </Link>
 

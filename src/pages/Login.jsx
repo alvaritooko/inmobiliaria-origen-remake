@@ -55,7 +55,7 @@ const Login = () => {
             <div className="flex-1 flex items-center justify-center p-8 md:p-24">
                 <div className="w-full max-w-sm space-y-12">
                     <Link to="/" className="flex items-center gap-3">
-                        <img src="/origen_logo_negro.png" alt="Origen Inmobiliaria" className="h-12 w-auto" />
+                        <img src="/origen_logo_color.png" alt="Origen Inmobiliaria" className="h-12 w-auto" />
                     </Link>
 
                     <div className="space-y-2">

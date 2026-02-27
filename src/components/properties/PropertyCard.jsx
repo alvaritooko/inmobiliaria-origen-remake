@@ -3,6 +3,8 @@ import { Bed, Bath, Maximize, MapPin, ArrowUpRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
+const typeLabels = { sale: 'En Venta', rent: 'En Alquiler', investment: 'Inversión' };
+
 const PropertyCard = ({ property }) => {
     return (
         <Link to={`/propiedad/${property.id}`}>
@@ -19,7 +21,7 @@ const PropertyCard = ({ property }) => {
                         className="w-full h-[400px] object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700 ease-out group-hover:scale-105"
                     />
                     <div className="absolute top-4 left-4 bg-white px-4 py-1.5 text-[10px] uppercase font-bold tracking-[0.2em] text-primary-950 shadow-sm">
-                        En Venta
+                        {typeLabels[property.type] || 'En Venta'}
                     </div>
                 </div>
 
@@ -56,7 +58,7 @@ const PropertyCard = ({ property }) => {
 
                     <div className="pt-2 flex justify-between items-center">
                         <span className="text-2xl font-display font-light text-primary-950 tracking-tighter">
-                            USD {property.price.toLocaleString()}
+                            {property.currency || 'USD'} {property.price?.toLocaleString()}
                         </span>
                         <span className="text-[9px] uppercase tracking-[0.3em] text-gold-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">
                             Detalles →
