@@ -16,6 +16,7 @@ CREATE TABLE profiles (
   role TEXT DEFAULT 'user' CHECK (role IN ('admin', 'agent', 'user')),
   avatar_url TEXT,
   phone TEXT,
+  city TEXT,
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -32,6 +33,16 @@ CREATE POLICY "profiles_select_all"
 CREATE POLICY "profiles_update_own"
   ON profiles FOR UPDATE
   USING (auth.uid() = id);
+
+-- Admin puede editar cualquier perfil
+CREATE POLICY "profiles_update_admin"
+  ON profiles FOR UPDATE
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
 
 -- Solo admin inserta perfiles (crear agentes)
 CREATE POLICY "profiles_insert_admin"
@@ -69,9 +80,9 @@ CREATE TABLE properties (
   city TEXT,
   address TEXT,
   images TEXT[] DEFAULT '{}',
-  type TEXT CHECK (type IN ('sale', 'rent')) DEFAULT 'sale',
+  type TEXT CHECK (type IN ('sale', 'rent', 'investment')) DEFAULT 'sale',
   property_type TEXT CHECK (property_type IN ('house', 'apartment', 'land', 'office', 'commercial', 'other')) DEFAULT 'house',
-  status TEXT CHECK (status IN ('published', 'draft', 'sold', 'archived')) DEFAULT 'draft',
+  status TEXT CHECK (status IN ('published', 'draft', 'sold', 'rented', 'archived')) DEFAULT 'draft',
   bedrooms INTEGER DEFAULT 0,
   bathrooms INTEGER DEFAULT 0,
   area_m2 NUMERIC,

@@ -3,6 +3,7 @@ import { supabase, uploadPropertyImage } from '../../lib/supabase';
 import { useAuth } from '../auth/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Upload, X, Loader2, Save, Image as ImageIcon, Video } from 'lucide-react';
+import { getCountries, getProvinces, getCities } from '../../data/locationData';
 
 const PropertyForm = () => {
     const { id } = useParams();
@@ -293,6 +294,7 @@ const PropertyForm = () => {
                                 <option value="draft">Borrador</option>
                                 <option value="published">Publicada</option>
                                 <option value="sold">Vendida</option>
+                                <option value="rented">Alquilada</option>
                                 <option value="archived">Archivada</option>
                             </select>
                         </div>
@@ -344,32 +346,50 @@ const PropertyForm = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label className="text-[10px] uppercase font-bold tracking-widest text-primary-950 block mb-2">País</label>
-                            <input
-                                type="text"
+                            <select
                                 value={form.country}
-                                onChange={(e) => handleChange('country', e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-primary-300 transition-colors"
-                            />
+                                onChange={(e) => {
+                                    const newCountry = e.target.value;
+                                    setForm(prev => ({ ...prev, country: newCountry, province: '', city: '' }));
+                                }}
+                                className="w-full px-4 py-3 border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-primary-300 transition-colors bg-white"
+                            >
+                                <option value="">Seleccionar país</option>
+                                {getCountries().map(c => (
+                                    <option key={c} value={c}>{c}</option>
+                                ))}
+                            </select>
                         </div>
                         <div>
-                            <label className="text-[10px] uppercase font-bold tracking-widest text-primary-950 block mb-2">Provincia</label>
-                            <input
-                                type="text"
+                            <label className="text-[10px] uppercase font-bold tracking-widest text-primary-950 block mb-2">Provincia / Estado</label>
+                            <select
                                 value={form.province}
-                                onChange={(e) => handleChange('province', e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-primary-300 transition-colors"
-                                placeholder="Ej: Misiones"
-                            />
+                                onChange={(e) => {
+                                    const newProvince = e.target.value;
+                                    setForm(prev => ({ ...prev, province: newProvince, city: '' }));
+                                }}
+                                disabled={!form.country}
+                                className="w-full px-4 py-3 border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-primary-300 transition-colors bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <option value="">Seleccionar provincia</option>
+                                {getProvinces(form.country).map(p => (
+                                    <option key={p} value={p}>{p}</option>
+                                ))}
+                            </select>
                         </div>
                         <div>
                             <label className="text-[10px] uppercase font-bold tracking-widest text-primary-950 block mb-2">Ciudad</label>
-                            <input
-                                type="text"
+                            <select
                                 value={form.city}
                                 onChange={(e) => handleChange('city', e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-primary-300 transition-colors"
-                                placeholder="Ej: Posadas"
-                            />
+                                disabled={!form.province}
+                                className="w-full px-4 py-3 border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-primary-300 transition-colors bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <option value="">Seleccionar ciudad</option>
+                                {getCities(form.country, form.province).map(c => (
+                                    <option key={c} value={c}>{c}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 

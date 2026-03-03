@@ -93,7 +93,7 @@ const Home = () => {
                                     ].map(t => (
                                         <button
                                             key={t.key}
-                                            onClick={() => setSearchType(t.key)}
+                                            onClick={() => { setSearchType(t.key); navigate(`/propiedades?tipo=${t.key}`); }}
                                             className={`px-6 py-3 rounded-sm text-[10px] font-bold uppercase tracking-[0.3em] transition-all duration-300 transform bg-primary-950 text-white shadow-xl hover:scale-105 ${searchType === t.key ? 'scale-105 ring-1 ring-white/20' : 'opacity-90 hover:opacity-100'
                                                 }`}
                                         >
@@ -141,9 +141,9 @@ const Home = () => {
                                     Propiedades <br /><span className="font-bold italic">Destacadas</span>
                                 </h3>
                             </div>
-                            <button className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-primary-950 border-b border-primary-200 pb-2 hover:border-primary-950 transition-all group">
+                            <Link to="/propiedades" className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-primary-950 border-b border-primary-200 pb-2 hover:border-primary-950 transition-all group">
                                 Ver Catálogo Completo <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                            </button>
+                            </Link>
                         </div>
 
                         {loadingProperties ? (

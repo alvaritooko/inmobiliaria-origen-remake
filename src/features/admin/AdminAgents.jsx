@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../auth/AuthContext';
-import { Plus, Edit3, Trash2, Loader2, X, UserPlus, Mail, Phone, User, Save } from 'lucide-react';
+import { Plus, Edit3, Trash2, Loader2, X, UserPlus, Mail, Phone, User, Save, MapPin } from 'lucide-react';
 
 const AdminAgents = () => {
     const [agents, setAgents] = useState([]);
@@ -19,6 +19,7 @@ const AdminAgents = () => {
         password: '',
         full_name: '',
         phone: '',
+        city: '',
     });
 
     const [editAgent, setEditAgent] = useState({
@@ -26,6 +27,7 @@ const AdminAgents = () => {
         full_name: '',
         phone: '',
         email: '',
+        city: '',
     });
 
     const fetchAgents = async () => {
@@ -58,6 +60,7 @@ const AdminAgents = () => {
                     password: newAgent.password,
                     full_name: newAgent.full_name,
                     phone: newAgent.phone,
+                    city: newAgent.city,
                 },
             });
 
@@ -66,7 +69,7 @@ const AdminAgents = () => {
             }
 
             setShowModal(false);
-            setNewAgent({ email: '', password: '', full_name: '', phone: '' });
+            setNewAgent({ email: '', password: '', full_name: '', phone: '', city: '' });
             fetchAgents();
         } catch (err) {
             console.error('Error creating agent:', err);
@@ -87,6 +90,7 @@ const AdminAgents = () => {
                 .update({
                     full_name: editAgent.full_name,
                     phone: editAgent.phone,
+                    city: editAgent.city,
                 })
                 .eq('id', editAgent.id);
 
@@ -95,7 +99,7 @@ const AdminAgents = () => {
             setShowEditModal(false);
             setAgents(prev =>
                 prev.map(a => a.id === editAgent.id
-                    ? { ...a, full_name: editAgent.full_name, phone: editAgent.phone }
+                    ? { ...a, full_name: editAgent.full_name, phone: editAgent.phone, city: editAgent.city }
                     : a
                 )
             );
@@ -154,6 +158,7 @@ const AdminAgents = () => {
             full_name: agent.full_name || '',
             phone: agent.phone || '',
             email: agent.email || '',
+            city: agent.city || '',
         });
         setError('');
         setShowEditModal(true);
@@ -198,6 +203,7 @@ const AdminAgents = () => {
                         <thead className="bg-gray-100/50 border-b border-gray-100">
                             <tr>
                                 <th className="p-5 text-[10px] uppercase font-bold tracking-widest text-primary-400">Agente</th>
+                                <th className="p-5 text-[10px] uppercase font-bold tracking-widest text-primary-400 hidden md:table-cell">Ciudad</th>
                                 <th className="p-5 text-[10px] uppercase font-bold tracking-widest text-primary-400 hidden md:table-cell">Teléfono</th>
                                 <th className="p-5 text-[10px] uppercase font-bold tracking-widest text-primary-400">Estado</th>
                                 <th className="p-5 text-[10px] uppercase font-bold tracking-widest text-primary-400">Acciones</th>
@@ -218,6 +224,9 @@ const AdminAgents = () => {
                                                 <div className="text-[10px] text-primary-400">{agent.email}</div>
                                             </div>
                                         </div>
+                                    </td>
+                                    <td className="p-5 hidden md:table-cell">
+                                        <span className="text-xs text-primary-400">{agent.city || '—'}</span>
                                     </td>
                                     <td className="p-5 hidden md:table-cell">
                                         <span className="text-xs text-primary-400">{agent.phone || '—'}</span>
@@ -346,6 +355,22 @@ const AdminAgents = () => {
                                 </div>
                             </div>
 
+                            <div>
+                                <label className="text-[10px] uppercase font-bold tracking-widest text-primary-950 block mb-2">
+                                    Ciudad
+                                </label>
+                                <div className="relative">
+                                    <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-300" />
+                                    <input
+                                        type="text"
+                                        value={newAgent.city}
+                                        onChange={(e) => setNewAgent(prev => ({ ...prev, city: e.target.value }))}
+                                        className="w-full pl-10 pr-4 py-3 border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-primary-300 transition-colors"
+                                        placeholder="Ej: Buenos Aires, Posadas, Córdoba"
+                                    />
+                                </div>
+                            </div>
+
                             <div className="flex items-center gap-3 pt-2">
                                 <button
                                     type="submit"
@@ -437,6 +462,22 @@ const AdminAgents = () => {
                                         onChange={(e) => setEditAgent(prev => ({ ...prev, phone: e.target.value }))}
                                         className="w-full pl-10 pr-4 py-3 border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-primary-300 transition-colors"
                                         placeholder="+54 9 376 4123456"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="text-[10px] uppercase font-bold tracking-widest text-primary-950 block mb-2">
+                                    Ciudad
+                                </label>
+                                <div className="relative">
+                                    <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-300" />
+                                    <input
+                                        type="text"
+                                        value={editAgent.city}
+                                        onChange={(e) => setEditAgent(prev => ({ ...prev, city: e.target.value }))}
+                                        className="w-full pl-10 pr-4 py-3 border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-primary-300 transition-colors"
+                                        placeholder="Ej: Buenos Aires, Posadas, Córdoba"
                                     />
                                 </div>
                             </div>

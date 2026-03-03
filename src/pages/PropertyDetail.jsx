@@ -352,7 +352,7 @@ const PropertyDetail = () => {
                                         {agent?.full_name || 'Origen Inmobiliaria'}
                                     </h5>
                                     <span className="text-[10px] text-primary-400 uppercase tracking-widest font-medium">
-                                        {agent?.role === 'admin' ? 'Director' : 'Agente'}
+                                        {agent?.role === 'admin' ? 'Gerente' : 'Agente'}
                                     </span>
                                 </div>
                             </div>

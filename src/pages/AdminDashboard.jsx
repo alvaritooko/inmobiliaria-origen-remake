@@ -5,6 +5,7 @@ import { useAuth } from '../features/auth/AuthContext';
 import AdminProperties from '../features/admin/AdminProperties';
 import PropertyForm from '../features/admin/PropertyForm';
 import AdminAgents from '../features/admin/AdminAgents';
+import AdminCRMStats from '../features/admin/AdminCRMStats';
 
 const AdminSummary = () => {
     const { profile } = useAuth();
@@ -37,6 +38,13 @@ const AdminSummary = () => {
                     <p className="text-sm text-primary-950">Configuración del perfil</p>
                 </Link>
             </div>
+
+            {/* CRM Stats — solo para admin */}
+            {profile?.role === 'admin' && (
+                <div className="mt-12">
+                    <AdminCRMStats />
+                </div>
+            )}
         </div>
     );
 };
