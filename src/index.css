@@ -9,7 +9,12 @@
     @apply font-sans bg-[#fdfdfd] text-primary-900 antialiased;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-display;
   }
 }
@@ -24,4 +29,42 @@
 
 .text-gradient {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-900 to-primary-600;
+}
+
+/* ── Leaflet Custom Popup Styles ── */
+.leaflet-popup-content-wrapper {
+  border-radius: 4px !important;
+  box-shadow: 0 10px 40px -8px rgba(0, 0, 0, 0.25) !important;
+  padding: 0 !important;
+  font-family: 'Inter', sans-serif !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.leaflet-popup-content {
+  margin: 12px 20px !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+
+.leaflet-popup-tip {
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.15) !important;
+}
+
+.leaflet-container {
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* Hide Geoman's default toolbar (we use custom buttons) */
+.leaflet-pm-toolbar {
+  display: none !important;
+}
+
+/* Gold crosshair cursor when drawing */
+.leaflet-container.leaflet-draw-crosshair {
+  cursor: crosshair !important;
+}
+
+/* Hide Leaflet attribution for cleaner look */
+.leaflet-control-attribution {
+  display: none !important;
 }

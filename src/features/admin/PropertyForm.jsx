@@ -4,6 +4,7 @@ import { useAuth } from '../auth/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Upload, X, Loader2, Save, Image as ImageIcon, Video } from 'lucide-react';
 import { getCountries, getProvinces, getCities } from '../../data/locationData';
+import LocationPicker from '../../components/map/LocationPicker';
 
 const PropertyForm = () => {
     const { id } = useParams();
@@ -35,6 +36,8 @@ const PropertyForm = () => {
         area_m2: '',
         images: [],
         video_url: '',
+        latitude: null,
+        longitude: null,
     });
 
     // Extract YouTube video ID from various URL formats
@@ -82,6 +85,8 @@ const PropertyForm = () => {
             area_m2: data.area_m2 || '',
             images: data.images || [],
             video_url: data.video_url || '',
+            latitude: data.latitude || null,
+            longitude: data.longitude || null,
         });
         setLoading(false);
     };
@@ -153,6 +158,8 @@ const PropertyForm = () => {
                 area_m2: form.area_m2 ? Number(form.area_m2) : null,
                 images: allImages,
                 video_url: form.video_url || null,
+                latitude: form.latitude || null,
+                longitude: form.longitude || null,
                 updated_at: new Date().toISOString(),
             };
 
@@ -413,6 +420,18 @@ const PropertyForm = () => {
                             onChange={(e) => handleChange('address', e.target.value)}
                             className="w-full px-4 py-3 border border-gray-100 rounded-sm text-sm focus:outline-none focus:border-primary-300 transition-colors"
                             placeholder="Ej: Av. Corrientes 1234"
+                        />
+                    </div>
+
+                    {/* Map Location Picker */}
+                    <div className="mt-6 pt-6 border-t border-gray-50">
+                        <label className="text-[10px] uppercase font-bold tracking-widest text-primary-950 block mb-4">Ubicación en Mapa</label>
+                        <LocationPicker
+                            latitude={form.latitude}
+                            longitude={form.longitude}
+                            onChange={({ latitude, longitude }) => {
+                                setForm(prev => ({ ...prev, latitude, longitude }));
+                            }}
                         />
                     </div>
                 </div>

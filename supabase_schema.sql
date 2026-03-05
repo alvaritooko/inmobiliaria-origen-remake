@@ -88,6 +88,8 @@ CREATE TABLE properties (
   area_m2 NUMERIC,
   video_url TEXT,
   features JSONB DEFAULT '{}'::jsonb,
+  latitude NUMERIC,
+  longitude NUMERIC,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

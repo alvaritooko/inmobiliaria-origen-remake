@@ -7,6 +7,7 @@ import PropertyDetail from './pages/PropertyDetail'
 import Properties from './pages/Properties'
 import Login from './pages/Login'
 import AdminDashboard from './pages/AdminDashboard'
+import Explore from './pages/Explore'
 
 const Placeholder = ({ title }) => (
   <div className="min-h-screen flex items-center justify-center bg-primary-50">
@@ -23,6 +24,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/propiedad/:id" element={<PropertyDetail />} />
             <Route path="/propiedades" element={<Properties />} />
+            <Route path="/explorar" element={<Explore />} />
             <Route path="/login" element={<Login />} />
             <Route
               path="/admin/*"

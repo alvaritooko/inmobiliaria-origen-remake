@@ -119,7 +119,7 @@ const Home = () => {
 
                                 {/* Explorar Button */}
                                 <button
-                                    onClick={handleSearch}
+                                    onClick={() => navigate('/explorar')}
                                     className="w-full md:w-auto bg-primary-950 text-white px-10 py-4 rounded-sm hover:bg-primary-800 transition-all font-bold uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-4 group shadow-xl shadow-primary-950/20"
                                 >
                                     Explorar <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />

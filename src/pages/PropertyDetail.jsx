@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Bed, Bath, Maximize, MapPin, ArrowLeft, Phone, Mail, Share2, Heart, Loader2, User, ChevronLeft, ChevronRight, X, Play } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
+import MapView, { goldMarkerIcon } from '../components/map/MapView';
+import { Marker } from 'react-leaflet';
 
 /* ── Lightbox Component (supports images + optional YouTube video as last item) ── */
 const Lightbox = ({ items, startIndex, onClose }) => {
@@ -336,6 +338,31 @@ const PropertyDetail = () => {
                                 )}
                             </div>
                         </div>
+
+                        {/* Location Map */}
+                        {property.latitude && property.longitude && (
+                            <div className="space-y-6">
+                                <h3 className="text-2xl font-display font-bold uppercase tracking-tight text-primary-950">Ubicación</h3>
+                                <div className="rounded-sm overflow-hidden border border-gray-100 shadow-sm" style={{ height: '360px' }}>
+                                    <MapView
+                                        center={[property.latitude, property.longitude]}
+                                        zoom={15}
+                                        scrollWheelZoom={false}
+                                    >
+                                        <Marker
+                                            position={[property.latitude, property.longitude]}
+                                            icon={goldMarkerIcon}
+                                        />
+                                    </MapView>
+                                </div>
+                                {property.address && (
+                                    <div className="flex items-center gap-2 text-primary-400">
+                                        <MapPin size={14} className="text-gold-500" />
+                                        <span className="text-sm font-light">{property.address}</span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Sidebar / Agent */}
