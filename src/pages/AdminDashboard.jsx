@@ -5,6 +5,7 @@ import { useAuth } from '../features/auth/AuthContext';
 import AdminProperties from '../features/admin/AdminProperties';
 import PropertyForm from '../features/admin/PropertyForm';
 import AdminAgents from '../features/admin/AdminAgents';
+import AgentProfile from '../features/admin/AgentProfile';
 import AdminCRMStats from '../features/admin/AdminCRMStats';
 
 const AdminSummary = () => {
@@ -138,6 +139,9 @@ const AdminDashboard = () => {
                     <Route path="propiedades/:id/editar" element={<PropertyForm />} />
                     <Route path="agentes" element={
                         profile?.role === 'admin' ? <AdminAgents /> : <AdminSummary />
+                    } />
+                    <Route path="agentes/:agentId" element={
+                        profile?.role === 'admin' ? <AgentProfile /> : <AdminSummary />
                     } />
                     <Route path="ajustes" element={
                         <div className="text-center py-20 text-primary-300 text-sm">

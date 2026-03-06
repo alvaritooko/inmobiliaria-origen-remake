@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../auth/AuthContext';
-import { Plus, Edit3, Trash2, Loader2, X, UserPlus, Mail, Phone, User, Save, MapPin } from 'lucide-react';
+import { Plus, Edit3, Trash2, Loader2, X, UserPlus, Mail, Phone, User, Save, MapPin, ChevronRight } from 'lucide-react';
 
 const AdminAgents = () => {
+    const navigate = useNavigate();
     const [agents, setAgents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -213,16 +215,21 @@ const AdminAgents = () => {
                             {agents.map((agent) => (
                                 <tr key={agent.id} className="hover:bg-gray-50/50 transition-colors">
                                     <td className="p-5">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                                <User size={16} className="text-primary-400" />
+                                        <div
+                                            className="flex items-center gap-3 cursor-pointer group"
+                                            onClick={() => navigate(`/admin/agentes/${agent.id}`)}
+                                            title="Ver perfil del agente"
+                                        >
+                                            <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-primary-200 transition-colors">
+                                                <User size={16} className="text-primary-400 group-hover:text-primary-950 transition-colors" />
                                             </div>
-                                            <div>
-                                                <div className="text-sm font-bold text-primary-950">
+                                            <div className="flex-1">
+                                                <div className="text-sm font-bold text-primary-950 group-hover:underline">
                                                     {agent.full_name || 'Sin nombre'}
                                                 </div>
                                                 <div className="text-[10px] text-primary-400">{agent.email}</div>
                                             </div>
+                                            <ChevronRight size={14} className="text-primary-200 group-hover:text-primary-400 transition-colors" />
                                         </div>
                                     </td>
                                     <td className="p-5 hidden md:table-cell">
