@@ -1,5 +1,5 @@
-import React from 'react';
-import { LayoutDashboard, Building2, Users, Settings, LogOut, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { LayoutDashboard, Building2, Users, Settings, LogOut, Loader2, Menu, X } from 'lucide-react';
 import { Link, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
 import AdminProperties from '../features/admin/AdminProperties';
@@ -13,7 +13,7 @@ const AdminSummary = () => {
 
     return (
         <div>
-            <h1 className="text-3xl font-display font-light text-primary-950 uppercase tracking-tight mb-2">
+            <h1 className="text-2xl md:text-3xl font-display font-light text-primary-950 uppercase tracking-tight mb-2">
                 Bienvenido, <span className="font-bold">{profile?.full_name || 'Admin'}</span>
             </h1>
             <p className="text-xs text-primary-400 font-bold uppercase tracking-widest mb-12">
@@ -55,7 +55,8 @@ const AdminDashboard = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const handleSignOut = async () => {
         if (isLoggingOut) return;
@@ -84,9 +85,60 @@ const AdminDashboard = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
-            {/* Sidebar */}
-            <aside className="w-64 bg-primary-950 text-white flex flex-col p-8 flex-shrink-0">
+        <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+            {/* Mobile Top Bar */}
+            <div className="md:hidden bg-primary-950 text-white px-4 py-3 flex items-center justify-between flex-shrink-0">
+                <Link to="/" className="flex items-center gap-2">
+                    <img src="/origen_logo_color.png" alt="Origen Admin" className="h-6 w-auto brightness-0 invert" />
+                </Link>
+                <span className="text-[8px] font-display font-bold tracking-[0.2em] uppercase opacity-40">Panel Admin</span>
+                <button
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    className="w-9 h-9 flex items-center justify-center rounded-sm bg-white/10 text-white/70 hover:bg-white/20 transition-all"
+                >
+                    {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+                </button>
+            </div>
+
+            {/* Mobile Slide Menu */}
+            {mobileMenuOpen && (
+                <div className="md:hidden bg-primary-950 text-white px-4 pb-4 flex-shrink-0 border-t border-white/10">
+                    <nav className="space-y-1 mb-4">
+                        {navItems.map((item) => (
+                            <Link
+                                key={item.path}
+                                to={item.path}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className={`flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] px-4 py-3 rounded-sm transition-all ${isActive(item)
+                                    ? 'bg-white/10 text-white'
+                                    : 'text-primary-400 hover:text-white'
+                                    }`}
+                            >
+                                <item.icon size={16} /> {item.label}
+                            </Link>
+                        ))}
+                    </nav>
+                    <div className="border-t border-white/10 pt-3 flex items-center justify-between">
+                        <div>
+                            <div className="text-[9px] font-bold uppercase tracking-widest text-white/60">
+                                {profile?.role === 'admin' ? 'Admin' : 'Agente'}
+                            </div>
+                            <div className="text-[10px] text-white/40 truncate max-w-[180px]">{profile?.email}</div>
+                        </div>
+                        <button
+                            onClick={handleSignOut}
+                            disabled={isLoggingOut}
+                            className={`flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.2em] px-3 py-2 rounded-sm transition-colors ${isLoggingOut ? 'text-gray-500 cursor-not-allowed' : 'text-primary-400 hover:text-red-400 bg-white/5'}`}
+                        >
+                            {isLoggingOut ? <Loader2 size={14} className="animate-spin" /> : <LogOut size={14} />}
+                            {isLoggingOut ? 'Cerrando...' : 'Salir'}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Desktop Sidebar — unchanged */}
+            <aside className="hidden md:flex w-64 bg-primary-950 text-white flex-col p-8 flex-shrink-0">
                 <Link to="/" className="mb-16 hover:opacity-80 transition-opacity">
                     <img src="/origen_logo_color.png" alt="Origen Admin" className="h-8 w-auto brightness-0 invert" />
                     <span className="text-[10px] font-display font-bold tracking-[0.3em] uppercase opacity-40 mt-3 block">Panel Administrativo</span>
@@ -131,7 +183,7 @@ const AdminDashboard = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 p-12 overflow-y-auto">
+            <main className="flex-1 p-4 md:p-12 overflow-y-auto">
                 <Routes>
                     <Route index element={<AdminSummary />} />
                     <Route path="propiedades" element={<AdminProperties />} />

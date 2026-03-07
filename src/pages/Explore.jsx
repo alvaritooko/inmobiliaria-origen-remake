@@ -127,7 +127,7 @@ const Explore = () => {
     const [filter, setFilter] = useState('all');
     const [search, setSearch] = useState('');
     const [hoveredId, setHoveredId] = useState(null);
-    const [showMobileMap, setShowMobileMap] = useState(false);
+    const [showMobileMap, setShowMobileMap] = useState(true);
     const [isDrawing, setIsDrawing] = useState(false);
     const [drawnZone, setDrawnZone] = useState(null);
     const markerRefs = useRef({});
@@ -264,10 +264,10 @@ const Explore = () => {
                             ))}
                         </div>
 
-                        {/* Draw Zone Button */}
+                        {/* Draw Zone Button (desktop only, mobile version is below) */}
                         <button
                             onClick={toggleDraw}
-                            className={`px-4 py-2 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] transition-all flex items-center gap-2 ${isDrawing
+                            className={`hidden md:flex px-4 py-2 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] transition-all items-center gap-2 ${isDrawing
                                 ? 'bg-gold-500 text-primary-950 ring-2 ring-gold-400/50'
                                 : drawnZone
                                     ? 'bg-gold-500/20 text-gold-400 border border-gold-500/30'
@@ -278,11 +278,11 @@ const Explore = () => {
                             {isDrawing ? 'Dibujando...' : 'Dibujar Zona'}
                         </button>
 
-                        {/* Clear Zone Button */}
+                        {/* Clear Zone Button (desktop only) */}
                         {drawnZone && (
                             <button
                                 onClick={clearZone}
-                                className="px-3 py-2 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all flex items-center gap-1"
+                                className="hidden md:flex px-3 py-2 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all items-center gap-1"
                             >
                                 <X size={12} /> Borrar Zona
                             </button>
@@ -301,13 +301,35 @@ const Explore = () => {
                         </div>
                     </div>
 
-                    {/* Mobile toggle */}
-                    <button
-                        onClick={() => setShowMobileMap(!showMobileMap)}
-                        className="md:hidden flex items-center gap-2 px-4 py-2 bg-gold-500 text-primary-950 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em]"
-                    >
-                        {showMobileMap ? <><List size={14} /> Ver Lista</> : <><MapIcon size={14} /> Ver Mapa</>}
-                    </button>
+                    {/* Mobile buttons: toggle + draw zone */}
+                    <div className="md:hidden flex items-center gap-2">
+                        <button
+                            onClick={() => setShowMobileMap(!showMobileMap)}
+                            className="flex items-center gap-2 px-4 py-2 bg-gold-500 text-primary-950 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em]"
+                        >
+                            {showMobileMap ? <><List size={14} /> Ver Lista</> : <><MapIcon size={14} /> Ver Mapa</>}
+                        </button>
+                        <button
+                            onClick={toggleDraw}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] transition-all ${isDrawing
+                                ? 'bg-gold-500 text-primary-950 ring-2 ring-gold-400/50'
+                                : drawnZone
+                                    ? 'bg-gold-500/20 text-gold-400 border border-gold-500/30'
+                                    : 'bg-white/10 text-white/70'
+                                }`}
+                        >
+                            <PenTool size={12} />
+                            {isDrawing ? 'Dibujando...' : 'Dibujar Zona'}
+                        </button>
+                        {drawnZone && (
+                            <button
+                                onClick={clearZone}
+                                className="flex items-center gap-1 px-3 py-2 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] bg-red-500/20 text-red-400 transition-all"
+                            >
+                                <X size={12} />
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 
