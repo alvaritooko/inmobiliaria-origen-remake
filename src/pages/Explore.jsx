@@ -52,6 +52,7 @@ const DRAW_STYLE = {
 const DrawController = ({ onZoneCreated, onZoneRemoved, isDrawing, setIsDrawing }) => {
     const map = useMap();
     const activeRef = useRef(false);
+    const drawingNow = useRef(false);
     const pointsRef = useRef([]);
     const polylineRef = useRef(null);
     const polygonRef = useRef(null);
@@ -68,16 +69,37 @@ const DrawController = ({ onZoneCreated, onZoneRemoved, isDrawing, setIsDrawing 
         pointsRef.current = [];
     }, [map]);
 
+    // Convert screen point to LatLng (works for both mouse and touch)
+    const getLatLng = useCallback((e) => {
+        const rect = map.getContainer().getBoundingClientRect();
+        let clientX, clientY;
+
+        if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else if (e.changedTouches && e.changedTouches.length > 0) {
+            clientX = e.changedTouches[0].clientX;
+            clientY = e.changedTouches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        return map.containerPointToLatLng(L.point(clientX - rect.left, clientY - rect.top));
+    }, [map]);
+
     useEffect(() => {
         if (!map) return;
+        const container = map.getContainer();
 
         const onStart = (e) => {
             if (!activeRef.current) return;
-            e.originalEvent?.preventDefault();
-            map.dragging.disable();
+            e.preventDefault();
+            e.stopPropagation();
+            drawingNow.current = true;
             clearDrawing();
 
-            const latlng = e.latlng;
+            const latlng = getLatLng(e);
             pointsRef.current = [latlng];
             polylineRef.current = L.polyline([latlng], {
                 color: DRAW_STYLE.color,
@@ -87,16 +109,18 @@ const DrawController = ({ onZoneCreated, onZoneRemoved, isDrawing, setIsDrawing 
         };
 
         const onMove = (e) => {
-            if (!activeRef.current || !polylineRef.current) return;
-            e.originalEvent?.preventDefault();
-            const latlng = e.latlng;
+            if (!activeRef.current || !drawingNow.current || !polylineRef.current) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const latlng = getLatLng(e);
             pointsRef.current.push(latlng);
             polylineRef.current.addLatLng(latlng);
         };
 
-        const onEnd = () => {
-            if (!activeRef.current || !polylineRef.current) return;
-            map.dragging.enable();
+        const onEnd = (e) => {
+            if (!activeRef.current || !drawingNow.current || !polylineRef.current) return;
+            e.preventDefault();
+            drawingNow.current = false;
 
             const points = pointsRef.current;
             if (polylineRef.current) {
@@ -114,12 +138,13 @@ const DrawController = ({ onZoneCreated, onZoneRemoved, isDrawing, setIsDrawing 
             setIsDrawing(false);
         };
 
-        map.on('mousedown', onStart);
-        map.on('mousemove', onMove);
-        map.on('mouseup', onEnd);
-        map.on('touchstart', onStart);
-        map.on('touchmove', onMove);
-        map.on('touchend', onEnd);
+        // Native DOM events — captures touches BEFORE Leaflet can
+        container.addEventListener('mousedown', onStart);
+        container.addEventListener('mousemove', onMove);
+        container.addEventListener('mouseup', onEnd);
+        container.addEventListener('touchstart', onStart, { passive: false });
+        container.addEventListener('touchmove', onMove, { passive: false });
+        container.addEventListener('touchend', onEnd, { passive: false });
 
         map._clearDrawnZone = () => {
             clearDrawing();
@@ -127,15 +152,15 @@ const DrawController = ({ onZoneCreated, onZoneRemoved, isDrawing, setIsDrawing 
         };
 
         return () => {
-            map.off('mousedown', onStart);
-            map.off('mousemove', onMove);
-            map.off('mouseup', onEnd);
-            map.off('touchstart', onStart);
-            map.off('touchmove', onMove);
-            map.off('touchend', onEnd);
+            container.removeEventListener('mousedown', onStart);
+            container.removeEventListener('mousemove', onMove);
+            container.removeEventListener('mouseup', onEnd);
+            container.removeEventListener('touchstart', onStart);
+            container.removeEventListener('touchmove', onMove);
+            container.removeEventListener('touchend', onEnd);
             delete map._clearDrawnZone;
         };
-    }, [map, onZoneCreated, onZoneRemoved, setIsDrawing, clearDrawing]);
+    }, [map, onZoneCreated, onZoneRemoved, setIsDrawing, clearDrawing, getLatLng]);
 
     useEffect(() => {
         activeRef.current = isDrawing;
