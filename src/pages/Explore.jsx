@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Marker, Popup, useMap } from 'react-leaflet';
-import { Search, Loader2, MapPin, Map as MapIcon, List, PenTool, X, Layers } from 'lucide-react';
+import { Search, Loader2, MapPin, Map as MapIcon, List, PenTool, X, Layers, Bed, Bath, Maximize, ArrowUpRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Navbar from '../components/layout/Navbar';
 import PropertyCard from '../components/properties/PropertyCard';
 import MapView, { goldMarkerIcon, goldMarkerHighlightIcon, DEFAULT_CENTER, MAP_STYLES } from '../components/map/MapView';
 import PropertyMapPopup from '../components/map/PropertyMapPopup';
+import { Link } from 'react-router-dom';
 import L from 'leaflet';
 
 /* ── Point-in-polygon check (ray casting algorithm) ── */
@@ -296,18 +297,18 @@ const Explore = () => {
         <div className="bg-[#fdfdfd] h-screen flex flex-col overflow-hidden">
             <Navbar />
 
-            {/* Top Bar */}
-            <div className="pt-20 bg-primary-950 text-white px-6 py-6 z-30 flex-shrink-0">
+            {/* Top Bar — glass-morphism matching Home design */}
+            <div className="pt-20 glass-morphism text-primary-950 px-6 py-5 z-30 flex-shrink-0 border-b border-white/10">
                 <div className="max-w-[1920px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                        <MapIcon size={18} className="text-gold-500" />
-                        <h1 className="text-lg font-display font-light uppercase tracking-[0.2em]">
+                        <MapIcon size={18} className="text-gold-600" />
+                        <h1 className="text-lg font-display font-light uppercase tracking-[0.2em] text-primary-950">
                             Explorar <span className="font-bold italic">Mapa</span>
                         </h1>
                     </div>
 
                     <div className="flex items-center gap-3 flex-wrap justify-center">
-                        {/* Filter buttons */}
+                        {/* Filter buttons — matching Home style */}
                         <div className="flex gap-2">
                             {[
                                 { key: 'all', label: 'Todas' },
@@ -318,25 +319,16 @@ const Explore = () => {
                                 <button
                                     key={f.key}
                                     onClick={() => { setFilter(f.key); if (f.key !== 'all') setShowPanel(true); }}
-                                    className={`px-4 py-2 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] transition-all ${filter === f.key
-                                        ? 'bg-gold-500 text-primary-950'
-                                        : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
-                                        }`}
+                                    className="px-4 py-2.5 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] transition-all duration-300 bg-primary-950 text-white shadow-xl hover:scale-105"
                                 >
                                     {f.label}
                                 </button>
                             ))}
                         </div>
 
-                        {/* Draw Zone Button (desktop only, mobile version is below) */}
                         <button
                             onClick={toggleDraw}
-                            className={`hidden md:flex px-4 py-2 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] transition-all items-center gap-2 ${isDrawing
-                                ? 'bg-gold-500 text-primary-950 ring-2 ring-gold-400/50'
-                                : drawnZone
-                                    ? 'bg-gold-500/20 text-gold-400 border border-gold-500/30'
-                                    : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
-                                }`}
+                            className="hidden md:flex px-4 py-2.5 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] transition-all duration-300 items-center gap-2 bg-primary-950 text-white shadow-xl hover:scale-105"
                         >
                             <PenTool size={12} />
                             {isDrawing ? 'Dibujando...' : 'Dibujar Zona'}
@@ -346,7 +338,7 @@ const Explore = () => {
                         {drawnZone && (
                             <button
                                 onClick={clearZone}
-                                className="hidden md:flex px-3 py-2 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all items-center gap-1"
+                                className="hidden md:flex px-3 py-2.5 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all items-center gap-1"
                             >
                                 <X size={12} /> Borrar Zona
                             </button>
@@ -354,13 +346,13 @@ const Explore = () => {
 
                         {/* Search */}
                         <div className="relative w-full md:w-72">
-                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-400" />
                             <input
                                 type="text"
                                 value={search}
                                 onChange={(e) => { setSearch(e.target.value); if (e.target.value) setShowPanel(true); }}
                                 placeholder="Buscar ubicación..."
-                                className="w-full pl-9 pr-4 py-2 bg-white/10 border border-white/10 rounded-sm text-sm text-white placeholder-white/30 focus:outline-none focus:border-gold-500/50 transition-colors"
+                                className="w-full pl-9 pr-4 py-2.5 bg-primary-950/10 border border-primary-200/30 rounded-sm text-sm text-primary-950 placeholder-primary-300 focus:outline-none focus:border-gold-500/50 transition-colors"
                             />
                         </div>
                     </div>
@@ -369,18 +361,13 @@ const Explore = () => {
                     <div className="md:hidden flex items-center gap-2">
                         <button
                             onClick={() => setShowMobileMap(!showMobileMap)}
-                            className="flex items-center gap-2 px-4 py-2 bg-gold-500 text-primary-950 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em]"
+                            className="flex items-center gap-2 px-4 py-2.5 bg-primary-950 text-white rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] shadow-xl"
                         >
                             {showMobileMap ? <><List size={14} /> Ver Lista</> : <><MapIcon size={14} /> Ver Mapa</>}
                         </button>
                         <button
                             onClick={toggleDraw}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] transition-all ${isDrawing
-                                ? 'bg-gold-500 text-primary-950 ring-2 ring-gold-400/50'
-                                : drawnZone
-                                    ? 'bg-gold-500/20 text-gold-400 border border-gold-500/30'
-                                    : 'bg-white/10 text-white/70'
-                                }`}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] transition-all duration-300 bg-primary-950 text-white shadow-xl hover:scale-105"
                         >
                             <PenTool size={12} />
                             {isDrawing ? 'Dibujando...' : 'Dibujar Zona'}
@@ -388,7 +375,7 @@ const Explore = () => {
                         {drawnZone && (
                             <button
                                 onClick={clearZone}
-                                className="flex items-center gap-1 px-3 py-2 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] bg-red-500/20 text-red-400 transition-all"
+                                className="flex items-center gap-1 px-3 py-2.5 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] bg-red-500/10 text-red-500 transition-all"
                             >
                                 <X size={12} />
                             </button>
@@ -546,8 +533,53 @@ const Explore = () => {
                         )}
                     </div>
 
-                    {/* Properties count overlay */}
-                    <div className="absolute bottom-6 left-6 z-[1000] bg-primary-950/90 backdrop-blur-sm text-white px-4 py-2 rounded-sm pointer-events-none">
+                    {/* Mobile bottom carousel — only when zone is drawn */}
+                    {showMobileMap && drawnZone && filtered.length > 0 && (
+                        <div className="md:hidden absolute bottom-0 left-0 right-0 z-[1000] pb-3">
+                            {/* Count badge */}
+                            <div className="px-3 pb-1.5">
+                                <span className="inline-block bg-primary-950/80 backdrop-blur-sm text-white px-2.5 py-0.5 rounded-sm text-[8px] uppercase tracking-[0.2em] font-bold">
+                                    <MapPin size={8} className="inline text-gold-500 mr-1" />
+                                    {filtered.length} propiedad{filtered.length !== 1 ? 'es' : ''} en zona
+                                </span>
+                            </div>
+                            {/* Scrollable cards */}
+                            <div className="flex gap-2 overflow-x-auto px-3 snap-x snap-mandatory scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+                                {filtered.map(prop => {
+                                    const img = prop.images?.[0] || 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=400&auto=format&fit=crop';
+                                    const typeLabels = { sale: 'Venta', rent: 'Alquiler', investment: 'Inversión' };
+                                    return (
+                                        <Link
+                                            to={`/propiedad/${prop.id}`}
+                                            key={prop.id}
+                                            className="flex-shrink-0 w-[160px] snap-start bg-primary-950/95 backdrop-blur-sm rounded-sm overflow-hidden shadow-xl border border-white/10"
+                                        >
+                                            <div className="relative h-[70px]">
+                                                <img src={img} alt={prop.title} className="w-full h-full object-cover" />
+                                                <div className="absolute top-1 left-1 bg-gold-500 px-1 py-[1px] text-[6px] uppercase font-bold tracking-[0.1em] text-primary-950">
+                                                    {typeLabels[prop.type] || 'Venta'}
+                                                </div>
+                                            </div>
+                                            <div className="p-2 space-y-1">
+                                                <h4 className="text-[10px] font-bold text-white leading-tight line-clamp-1">
+                                                    {prop.title}
+                                                </h4>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-[11px] font-bold text-gold-500">
+                                                        {prop.currency || 'USD'} {prop.price?.toLocaleString()}
+                                                    </span>
+                                                    <ArrowUpRight size={10} className="text-gold-500" />
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Properties count overlay (desktop only) */}
+                    <div className="hidden md:block absolute bottom-6 left-6 z-[1000] bg-primary-950/90 backdrop-blur-sm text-white px-4 py-2 rounded-sm pointer-events-none">
                         <span className="text-[9px] uppercase tracking-[0.2em] font-bold">
                             <MapPin size={10} className="inline text-gold-500 mr-1" />
                             {propertiesWithCoords.length} propiedades en el mapa

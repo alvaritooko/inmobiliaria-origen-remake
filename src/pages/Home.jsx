@@ -94,8 +94,7 @@ const Home = () => {
                                         <button
                                             key={t.key}
                                             onClick={() => { setSearchType(t.key); navigate(`/propiedades?tipo=${t.key}`); }}
-                                            className={`flex-1 px-3 md:px-6 py-3 rounded-sm text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] transition-all duration-300 transform bg-primary-950 text-white shadow-xl hover:scale-105 ${searchType === t.key ? 'scale-105 ring-1 ring-white/20' : 'opacity-90 hover:opacity-100'
-                                                }`}
+                                            className="flex-1 px-3 md:px-6 py-4 rounded-sm text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] transition-all duration-300 bg-primary-950 text-white shadow-xl hover:scale-105"
                                         >
                                             {t.label}
                                         </button>
@@ -120,7 +119,7 @@ const Home = () => {
                                 {/* Explorar Button */}
                                 <button
                                     onClick={() => navigate('/explorar')}
-                                    className="w-full md:w-auto bg-primary-950 text-white px-10 py-4 rounded-sm hover:bg-primary-800 transition-all font-bold uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-4 group shadow-xl shadow-primary-950/20"
+                                    className="w-full md:w-auto bg-primary-950 text-white px-10 py-4 rounded-sm transition-all duration-300 font-bold uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-4 group shadow-xl hover:scale-105"
                                 >
                                     Explorar <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                                 </button>
