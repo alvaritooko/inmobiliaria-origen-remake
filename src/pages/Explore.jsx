@@ -7,8 +7,6 @@ import PropertyCard from '../components/properties/PropertyCard';
 import MapView, { goldMarkerIcon, goldMarkerHighlightIcon, DEFAULT_CENTER, MAP_STYLES } from '../components/map/MapView';
 import PropertyMapPopup from '../components/map/PropertyMapPopup';
 import L from 'leaflet';
-import '@geoman-io/leaflet-geoman-free';
-import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
 
 /* ── Point-in-polygon check (ray casting algorithm) ── */
 const isPointInPolygon = (lat, lng, polygon) => {
@@ -42,81 +40,109 @@ const FitBounds = ({ properties }) => {
     return null;
 };
 
-/* ── Geoman Draw Controller ── */
+/* ── Custom Freehand Draw Controller (gold color) ── */
+const DRAW_STYLE = {
+    color: '#c8a55a',
+    weight: 3,
+    opacity: 0.9,
+    fillColor: '#c8a55a',
+    fillOpacity: 0.15,
+};
+
 const DrawController = ({ onZoneCreated, onZoneRemoved, isDrawing, setIsDrawing }) => {
     const map = useMap();
-    const drawnLayerRef = useRef(null);
+    const activeRef = useRef(false);
+    const pointsRef = useRef([]);
+    const polylineRef = useRef(null);
+    const polygonRef = useRef(null);
 
-    useEffect(() => {
-        if (!map) return;
-
-        // Configure Geoman
-        map.pm.setGlobalOptions({
-            pathOptions: {
-                color: '#c8a55a',
-                fillColor: '#c8a55a',
-                fillOpacity: 0.1,
-                weight: 2,
-            },
-            tooltips: false,
-        });
-
-        // When a shape is created
-        const handleCreate = (e) => {
-            // Remove previous drawn layer
-            if (drawnLayerRef.current) {
-                map.removeLayer(drawnLayerRef.current);
-            }
-            drawnLayerRef.current = e.layer;
-
-            // Extract polygon coordinates
-            const latlngs = e.layer.getLatLngs()[0];
-            const polygon = latlngs.map(ll => [ll.lat, ll.lng]);
-            onZoneCreated(polygon);
-            setIsDrawing(false);
-
-            // Disable draw mode
-            map.pm.disableDraw();
-        };
-
-        map.on('pm:create', handleCreate);
-
-        return () => {
-            map.off('pm:create', handleCreate);
-        };
-    }, [map, onZoneCreated, setIsDrawing]);
-
-    // Start/stop draw mode
-    useEffect(() => {
-        if (!map) return;
-
-        if (isDrawing) {
-            map.pm.enableDraw('Polygon', {
-                snappable: false,
-                freehand: true,
-            });
-        } else {
-            map.pm.disableDraw();
+    const clearDrawing = useCallback(() => {
+        if (polylineRef.current) {
+            map.removeLayer(polylineRef.current);
+            polylineRef.current = null;
         }
-    }, [isDrawing, map]);
+        if (polygonRef.current) {
+            map.removeLayer(polygonRef.current);
+            polygonRef.current = null;
+        }
+        pointsRef.current = [];
+    }, [map]);
 
-    // Expose clear function
     useEffect(() => {
         if (!map) return;
 
-        // Store the clear function reference so parent can call it
-        map._clearDrawnZone = () => {
-            if (drawnLayerRef.current) {
-                map.removeLayer(drawnLayerRef.current);
-                drawnLayerRef.current = null;
+        const onStart = (e) => {
+            if (!activeRef.current) return;
+            e.originalEvent?.preventDefault();
+            map.dragging.disable();
+            clearDrawing();
+
+            const latlng = e.latlng;
+            pointsRef.current = [latlng];
+            polylineRef.current = L.polyline([latlng], {
+                color: DRAW_STYLE.color,
+                weight: DRAW_STYLE.weight,
+                opacity: DRAW_STYLE.opacity,
+            }).addTo(map);
+        };
+
+        const onMove = (e) => {
+            if (!activeRef.current || !polylineRef.current) return;
+            e.originalEvent?.preventDefault();
+            const latlng = e.latlng;
+            pointsRef.current.push(latlng);
+            polylineRef.current.addLatLng(latlng);
+        };
+
+        const onEnd = () => {
+            if (!activeRef.current || !polylineRef.current) return;
+            map.dragging.enable();
+
+            const points = pointsRef.current;
+            if (polylineRef.current) {
+                map.removeLayer(polylineRef.current);
+                polylineRef.current = null;
             }
+
+            if (points.length > 2) {
+                polygonRef.current = L.polygon(points, DRAW_STYLE).addTo(map);
+                const polygon = points.map(ll => [ll.lat, ll.lng]);
+                onZoneCreated(polygon);
+            }
+
+            activeRef.current = false;
+            setIsDrawing(false);
+        };
+
+        map.on('mousedown', onStart);
+        map.on('mousemove', onMove);
+        map.on('mouseup', onEnd);
+        map.on('touchstart', onStart);
+        map.on('touchmove', onMove);
+        map.on('touchend', onEnd);
+
+        map._clearDrawnZone = () => {
+            clearDrawing();
             onZoneRemoved();
         };
 
         return () => {
+            map.off('mousedown', onStart);
+            map.off('mousemove', onMove);
+            map.off('mouseup', onEnd);
+            map.off('touchstart', onStart);
+            map.off('touchmove', onMove);
+            map.off('touchend', onEnd);
             delete map._clearDrawnZone;
         };
-    }, [map, onZoneRemoved]);
+    }, [map, onZoneCreated, onZoneRemoved, setIsDrawing, clearDrawing]);
+
+    useEffect(() => {
+        activeRef.current = isDrawing;
+        if (map) {
+            map.getContainer().style.cursor = isDrawing ? 'crosshair' : '';
+        }
+    }, [isDrawing, map]);
 
     return null;
 };
@@ -132,6 +158,7 @@ const Explore = () => {
     const [drawnZone, setDrawnZone] = useState(null);
     const [mapStyle, setMapStyle] = useState('dark');
     const [showStyleMenu, setShowStyleMenu] = useState(false);
+    const [showPanel, setShowPanel] = useState(false);
     const markerRefs = useRef({});
     const mapRef = useRef(null);
 
@@ -165,6 +192,7 @@ const Explore = () => {
 
     const handleZoneCreated = useCallback((polygon) => {
         setDrawnZone(polygon);
+        setShowPanel(true);
     }, []);
 
     const handleZoneRemoved = useCallback(() => {
@@ -255,7 +283,7 @@ const Explore = () => {
                             ].map(f => (
                                 <button
                                     key={f.key}
-                                    onClick={() => setFilter(f.key)}
+                                    onClick={() => { setFilter(f.key); if (f.key !== 'all') setShowPanel(true); }}
                                     className={`px-4 py-2 rounded-sm text-[9px] font-bold uppercase tracking-[0.2em] transition-all ${filter === f.key
                                         ? 'bg-gold-500 text-primary-950'
                                         : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
@@ -296,7 +324,7 @@ const Explore = () => {
                             <input
                                 type="text"
                                 value={search}
-                                onChange={(e) => setSearch(e.target.value)}
+                                onChange={(e) => { setSearch(e.target.value); if (e.target.value) setShowPanel(true); }}
                                 placeholder="Buscar ubicación..."
                                 className="w-full pl-9 pr-4 py-2 bg-white/10 border border-white/10 rounded-sm text-sm text-white placeholder-white/30 focus:outline-none focus:border-gold-500/50 transition-colors"
                             />
@@ -348,7 +376,7 @@ const Explore = () => {
             {/* Main Content */}
             <div className="flex-1 flex overflow-hidden">
                 {/* Property List (left panel) */}
-                <div className={`w-full md:w-[420px] lg:w-[480px] flex-shrink-0 overflow-y-auto border-r border-gray-100 bg-white ${showMobileMap ? 'hidden md:block' : 'block'}`}>
+                <div className={`w-full md:w-[420px] lg:w-[480px] flex-shrink-0 overflow-y-auto border-r border-gray-100 bg-white transition-all duration-300 ${showMobileMap ? 'hidden' : 'block'} ${showPanel ? 'md:block' : 'md:hidden'}`}>
                     <div className="p-6">
                         <p className="text-[10px] text-primary-400 font-bold uppercase tracking-widest mb-6">
                             {filtered.length} propiedad{filtered.length !== 1 ? 'es' : ''} encontrada{filtered.length !== 1 ? 's' : ''}
@@ -444,6 +472,18 @@ const Explore = () => {
                             ))}
                         </MapView>
                     )}
+
+                    {/* Panel toggle button (desktop only) */}
+                    <button
+                        onClick={() => setShowPanel(!showPanel)}
+                        className="hidden md:flex absolute top-24 left-4 z-[1000] bg-primary-950/80 backdrop-blur-sm text-white p-2.5 rounded-sm shadow-lg hover:bg-primary-950 transition-all items-center gap-2"
+                        title={showPanel ? 'Ocultar lista' : 'Ver lista de propiedades'}
+                    >
+                        <List size={16} className="text-gold-500" />
+                        <span className="text-[9px] font-bold uppercase tracking-[0.15em]">
+                            {showPanel ? 'Ocultar' : 'Ver Lista'}
+                        </span>
+                    </button>
 
                     {/* Map style switcher */}
                     <div className="absolute top-4 right-4 z-[1000]">
