@@ -141,6 +141,15 @@ const DrawController = ({ onZoneCreated, onZoneRemoved, isDrawing, setIsDrawing 
         activeRef.current = isDrawing;
         if (map) {
             map.getContainer().style.cursor = isDrawing ? 'crosshair' : '';
+            if (isDrawing) {
+                map.dragging.disable();
+                map.touchZoom.disable();
+                map.doubleClickZoom.disable();
+            } else {
+                map.dragging.enable();
+                map.touchZoom.enable();
+                map.doubleClickZoom.enable();
+            }
         }
     }, [isDrawing, map]);
 
