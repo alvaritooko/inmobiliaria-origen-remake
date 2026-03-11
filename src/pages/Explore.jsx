@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Marker, Popup, useMap } from 'react-leaflet';
-import { Search, Loader2, MapPin, Map as MapIcon, List, PenTool, X } from 'lucide-react';
+import { Search, Loader2, MapPin, Map as MapIcon, List, PenTool, X, Layers } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Navbar from '../components/layout/Navbar';
 import PropertyCard from '../components/properties/PropertyCard';
-import MapView, { goldMarkerIcon, goldMarkerHighlightIcon, DEFAULT_CENTER } from '../components/map/MapView';
+import MapView, { goldMarkerIcon, goldMarkerHighlightIcon, DEFAULT_CENTER, MAP_STYLES } from '../components/map/MapView';
 import PropertyMapPopup from '../components/map/PropertyMapPopup';
 import L from 'leaflet';
 import '@geoman-io/leaflet-geoman-free';
@@ -93,7 +93,7 @@ const DrawController = ({ onZoneCreated, onZoneRemoved, isDrawing, setIsDrawing 
         if (isDrawing) {
             map.pm.enableDraw('Polygon', {
                 snappable: false,
-                finishOn: 'dblclick',
+                freehand: true,
             });
         } else {
             map.pm.disableDraw();
@@ -130,6 +130,8 @@ const Explore = () => {
     const [showMobileMap, setShowMobileMap] = useState(true);
     const [isDrawing, setIsDrawing] = useState(false);
     const [drawnZone, setDrawnZone] = useState(null);
+    const [mapStyle, setMapStyle] = useState('dark');
+    const [showStyleMenu, setShowStyleMenu] = useState(false);
     const markerRefs = useRef({});
     const mapRef = useRef(null);
 
@@ -338,7 +340,7 @@ const Explore = () => {
                 <div className="bg-gold-500 text-primary-950 px-6 py-3 text-center flex-shrink-0 z-20">
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em]">
                         <PenTool size={12} className="inline mr-2" />
-                        Hacé clic en el mapa para dibujar los puntos de la zona · Doble clic para cerrar el polígono
+                        Hacé clic sostenido y arrastrá para dibujar la zona · Soltá para cerrar el polígono
                     </p>
                 </div>
             )}
@@ -409,6 +411,7 @@ const Explore = () => {
                             center={DEFAULT_CENTER}
                             zoom={12}
                             scrollWheelZoom={true}
+                            tileStyle={mapStyle}
                             style={{ height: '100%', width: '100%' }}
                         >
                             <MapRefSetter />
@@ -441,6 +444,33 @@ const Explore = () => {
                             ))}
                         </MapView>
                     )}
+
+                    {/* Map style switcher */}
+                    <div className="absolute top-4 right-4 z-[1000]">
+                        <button
+                            onClick={() => setShowStyleMenu(!showStyleMenu)}
+                            className="bg-primary-950/80 backdrop-blur-sm text-white p-2.5 rounded-sm shadow-lg hover:bg-primary-950 transition-all"
+                            title="Cambiar estilo de mapa"
+                        >
+                            <Layers size={16} className="text-gold-500" />
+                        </button>
+                        {showStyleMenu && (
+                            <div className="absolute right-0 mt-2 bg-primary-950/95 backdrop-blur-sm rounded-sm shadow-xl overflow-hidden min-w-[140px]">
+                                {Object.entries(MAP_STYLES).map(([key, s]) => (
+                                    <button
+                                        key={key}
+                                        onClick={() => { setMapStyle(key); setShowStyleMenu(false); }}
+                                        className={`w-full text-left px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.15em] transition-all ${mapStyle === key
+                                            ? 'bg-gold-500 text-primary-950'
+                                            : 'text-white/70 hover:bg-white/10 hover:text-white'
+                                            }`}
+                                    >
+                                        {s.name}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
                     {/* Properties count overlay */}
                     <div className="absolute bottom-6 left-6 z-[1000] bg-primary-950/90 backdrop-blur-sm text-white px-4 py-2 rounded-sm pointer-events-none">

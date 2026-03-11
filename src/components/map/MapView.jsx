@@ -63,9 +63,29 @@ export const goldMarkerHighlightIcon = new L.Icon({
     shadowAnchor: [10, 41],
 });
 
-// CartoDB Dark Matter tiles — premium dark theme
-const DARK_TILES = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-const DARK_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>';
+// Available map tile styles
+export const MAP_STYLES = {
+    dark: {
+        name: 'Dark',
+        url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    },
+    voyager: {
+        name: 'Voyager',
+        url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    },
+    standard: {
+        name: 'Estándar',
+        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    },
+    satellite: {
+        name: 'Satélite',
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        attribution: '&copy; <a href="https://www.esri.com/">Esri</a> — Sources: Esri, DigitalGlobe, Earthstar Geographics',
+    },
+};
 
 // Default center: Posadas, Misiones, Argentina
 export const DEFAULT_CENTER = [-27.3671, -55.8960];
@@ -78,8 +98,11 @@ const MapView = ({
     className = '',
     style = {},
     scrollWheelZoom = true,
+    tileStyle = 'dark',
     ...props
 }) => {
+    const tiles = MAP_STYLES[tileStyle] || MAP_STYLES.voyager;
+
     return (
         <MapContainer
             center={center}
@@ -89,7 +112,7 @@ const MapView = ({
             style={{ width: '100%', height: '100%', ...style }}
             {...props}
         >
-            <TileLayer url={DARK_TILES} attribution={DARK_ATTRIBUTION} />
+            <TileLayer key={tileStyle} url={tiles.url} attribution={tiles.attribution} />
             {children}
         </MapContainer>
     );
