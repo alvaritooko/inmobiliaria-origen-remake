@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
 import {
-    Building2, Users, TrendingUp, CheckCircle, BarChart3, Clock,
+    Building2, Users, TrendingUp, CheckCircle, BarChart3, Clock, MessageSquare, DollarSign
 } from 'lucide-react';
 import {
     PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -75,6 +75,7 @@ const ChartCard = ({ title, children, className = '' }) => (
 const AdminCRMStats = () => {
     const [properties, setProperties] = useState([]);
     const [agents, setAgents] = useState([]);
+    const [leads, setLeads] = useState([]);
     const [loading, setLoading] = useState(true);
     const [period, setPeriod] = useState('month'); // week | month | year
     const [selectedAgent, setSelectedAgent] = useState('all'); // 'all' or agent UUID
@@ -82,7 +83,7 @@ const AdminCRMStats = () => {
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            const [propRes, agentRes] = await Promise.all([
+            const [propRes, agentRes, leadRes] = await Promise.all([
                 supabase
                     .from('properties')
                     .select('*, profiles(full_name, email, city)')
@@ -92,10 +93,15 @@ const AdminCRMStats = () => {
                     .select('*')
                     .in('role', ['agent', 'admin'])
                     .order('created_at', { ascending: false }),
+                supabase
+                    .from('leads')
+                    .select('*')
+                    .order('created_at', { ascending: false })
             ]);
 
             if (propRes.data) setProperties(propRes.data);
             if (agentRes.data) setAgents(agentRes.data);
+            if (leadRes.data) setLeads(leadRes.data);
             setLoading(false);
         };
         fetchData();
@@ -176,8 +182,29 @@ const AdminCRMStats = () => {
         // Recent activity (properties added in period)
         const recentCount = filteredProps.filter(p => isWithinDays(p.created_at, periodDays)).length;
 
-        return { total, published, sold, rented, activeAgents, byType, byStatus, perAgent, byCity, recentCount, periodDays };
-    }, [properties, agents, period, selectedAgent]);
+        // Leads stats
+        const periodLeads = leads.filter(l => isWithinDays(l.created_at, periodDays));
+        const newLeads = periodLeads.filter(l => l.status === 'new').length;
+
+        // Funnel Data
+        const funnelData = [
+            { name: 'Nuevos', value: leads.filter(l => l.status === 'new').length, fill: '#3b82f6' },
+            { name: 'Contactados', value: leads.filter(l => l.status === 'contacted').length, fill: '#f59e0b' },
+            { name: 'Interesados', value: leads.filter(l => l.status === 'interested').length, fill: '#10b981' },
+            { name: 'Cerrados', value: leads.filter(l => l.status === 'closed').length, fill: '#1a1a1a' }
+        ];
+
+        // Financial KPIs
+        const expectedRevenue = leads
+            .filter(l => l.status === 'interested')
+            .reduce((sum, l) => sum + (Number(l.deal_value) || 0), 0);
+
+        return { 
+            total, published, sold, rented, activeAgents, 
+            byType, byStatus, perAgent, byCity, 
+            recentCount, periodDays, newLeads, funnelData, expectedRevenue 
+        };
+    }, [properties, agents, leads, period, selectedAgent]);
 
     const periodLabel = period === 'week' ? 'esta semana' : period === 'month' ? 'este mes' : 'este año';
 
@@ -210,6 +237,7 @@ const AdminCRMStats = () => {
                             </option>
                         ))}
                     </select>
+                    
                     {/* Period selector */}
                     <div className="flex bg-white rounded-sm border border-gray-100 overflow-hidden">
                         {[
@@ -235,10 +263,9 @@ const AdminCRMStats = () => {
             {/* ── KPI Cards ───────────────────────── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <KPICard icon={Building2} label="Total Propiedades" value={stats.total} accent="bg-primary-100" />
-                <KPICard icon={CheckCircle} label="Publicadas" value={stats.published} accent="bg-green-100" />
-                <KPICard icon={TrendingUp} label="Vendidas" value={stats.sold} accent="bg-blue-100" />
-                <KPICard icon={CheckCircle} label="Alquiladas" value={stats.rented} accent="bg-teal-100" />
-                <KPICard icon={Users} label="Agentes Activos" value={stats.activeAgents} accent="bg-violet-100" />
+                <KPICard icon={MessageSquare} label="Nuevos Leads" value={stats.newLeads} accent="bg-blue-100" sub={periodLabel} />
+                <KPICard icon={TrendingUp} label="Ventas Cerradas" value={stats.sold} accent="bg-emerald-100" />
+                <KPICard icon={DollarSign} label="Ventas Proyectadas" value={`$${(stats.expectedRevenue / 1000).toFixed(0)}k`} accent="bg-violet-100" />
             </div>
 
             {/* ── Activity banner ─────────────────── */}
@@ -252,6 +279,36 @@ const AdminCRMStats = () => {
                 </div>
                 <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary-400">
                     cargadas {periodLabel}
+                </div>
+            </div>
+
+            {/* ── Sales Funnel Row ────────────────── */}
+            <div className="bg-white p-8 rounded-sm border border-gray-100 shadow-sm">
+                <h3 className="text-xs uppercase font-bold tracking-[0.2em] text-primary-950 mb-8 border-b border-gray-50 pb-4">
+                    Embudo de Ventas (Total)
+                </h3>
+                <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={stats.funnelData} layout="vertical" barSize={40}>
+                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
+                            <XAxis type="number" hide />
+                            <YAxis 
+                                dataKey="name" 
+                                type="category" 
+                                tick={{fontSize: 10, fontWeight: 700, fill: '#1a1a1a'}} 
+                                width={120}
+                            />
+                            <Tooltip 
+                                cursor={{fill: 'transparent'}}
+                                contentStyle={{ borderRadius: '0px', border: '1px solid #f0f0f0', fontSize: '11px', fontWeight: 'bold' }}
+                            />
+                            <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                                {stats.funnelData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
                 </div>
             </div>
 

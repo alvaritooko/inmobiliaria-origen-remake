@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Building2, Users, Settings, LogOut, Loader2, Menu, X } from 'lucide-react';
+import { 
+    LayoutDashboard, Building2, Users, Settings, LogOut, Loader2, Menu, X, Plus, MessageSquare, DollarSign 
+} from 'lucide-react';
 import { Link, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
 import AdminProperties from '../features/admin/AdminProperties';
@@ -7,6 +9,8 @@ import PropertyForm from '../features/admin/PropertyForm';
 import AdminAgents from '../features/admin/AdminAgents';
 import AgentProfile from '../features/admin/AgentProfile';
 import AdminCRMStats from '../features/admin/AdminCRMStats';
+import AdminLeads from '../features/admin/AdminLeads';
+import AdminFinance from '../features/admin/AdminFinance';
 
 const AdminSummary = () => {
     const { profile } = useAuth();
@@ -31,6 +35,18 @@ const AdminSummary = () => {
                         <Users size={24} className="text-primary-300 mb-4 group-hover:text-primary-950 transition-colors" />
                         <h3 className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary-400 mb-1">Agentes</h3>
                         <p className="text-sm text-primary-950">Administrar equipo</p>
+                    </Link>
+                )}
+                <Link to="/admin/leads" className="bg-white rounded-sm shadow-sm border border-gray-100 p-8 hover:shadow-md transition-shadow group">
+                    <MessageSquare size={24} className="text-primary-300 mb-4 group-hover:text-primary-950 transition-colors" />
+                    <h3 className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary-400 mb-1">Leads</h3>
+                    <p className="text-sm text-primary-950">Gestionar interesados</p>
+                </Link>
+                {profile?.role === 'admin' && (
+                    <Link to="/admin/finanzas" className="bg-white rounded-sm shadow-sm border border-gray-100 p-8 hover:shadow-md transition-shadow group">
+                        <DollarSign size={24} className="text-primary-300 mb-4 group-hover:text-primary-950 transition-colors" />
+                        <h3 className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary-400 mb-1">Finanzas</h3>
+                        <p className="text-sm text-primary-950">Control de ingresos y comisiones</p>
                     </Link>
                 )}
                 <Link to="/admin/ajustes" className="bg-white rounded-sm shadow-sm border border-gray-100 p-8 hover:shadow-md transition-shadow group">
@@ -73,16 +89,22 @@ const AdminDashboard = () => {
     };
 
     const navItems = [
-        { path: '/admin', icon: LayoutDashboard, label: 'Resumen', exact: true },
-        { path: '/admin/propiedades', icon: Building2, label: 'Propiedades' },
-        ...(profile?.role === 'admin' ? [{ path: '/admin/agentes', icon: Users, label: 'Agentes' }] : []),
-        { path: '/admin/ajustes', icon: Settings, label: 'Ajustes' },
+        { path: '/admin', icon: LayoutDashboard, label: 'Resumen', exact: true, roles: ['admin', 'agent'] },
+        { path: '/admin/propiedades', icon: Building2, label: 'Propiedades', roles: ['admin', 'agent'] },
+        { path: '/admin/leads', icon: MessageSquare, label: 'Leads', roles: ['admin', 'agent'] },
+        { path: '/admin/agentes', icon: Users, label: 'Agentes', roles: ['admin'] },
+        { path: '/admin/finanzas', icon: DollarSign, label: 'Finanzas', roles: ['admin'] },
+        { path: '/admin/ajustes', icon: Settings, label: 'Ajustes', roles: ['admin', 'agent'] },
     ];
 
     const isActive = (item) => {
         if (item.exact) return location.pathname === item.path;
         return location.pathname.startsWith(item.path);
     };
+
+    const filteredNavItems = navItems.filter(item =>
+        !item.roles || item.roles.includes(profile?.role)
+    );
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
@@ -104,7 +126,7 @@ const AdminDashboard = () => {
             {mobileMenuOpen && (
                 <div className="md:hidden bg-primary-950 text-white px-4 pb-4 flex-shrink-0 border-t border-white/10">
                     <nav className="space-y-1 mb-4">
-                        {navItems.map((item) => (
+                        {filteredNavItems.map((item) => (
                             <Link
                                 key={item.path}
                                 to={item.path}
@@ -145,7 +167,7 @@ const AdminDashboard = () => {
                 </Link>
 
                 <nav className="flex-1 space-y-2">
-                    {navItems.map((item) => (
+                    {filteredNavItems.map((item) => (
                         <Link
                             key={item.path}
                             to={item.path}
@@ -189,6 +211,10 @@ const AdminDashboard = () => {
                     <Route path="propiedades" element={<AdminProperties />} />
                     <Route path="propiedades/nueva" element={<PropertyForm />} />
                     <Route path="propiedades/:id/editar" element={<PropertyForm />} />
+                    <Route path="leads" element={<AdminLeads />} />
+                    <Route path="finanzas" element={
+                        profile?.role === 'admin' ? <AdminFinance /> : <AdminSummary />
+                    } />
                     <Route path="agentes" element={
                         profile?.role === 'admin' ? <AdminAgents /> : <AdminSummary />
                     } />

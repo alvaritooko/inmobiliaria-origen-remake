@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Bed, Bath, Maximize, MapPin, ArrowLeft, Phone, Mail, Share2, Heart, Loader2, User, ChevronLeft, ChevronRight, X, Play } from 'lucide-react';
+import { Bed, Bath, Maximize, MapPin, ArrowLeft, Phone, Mail, Share2, Heart, Loader2, User, ChevronLeft, ChevronRight, X, Play, CheckCircle } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import MapView, { goldMarkerIcon } from '../components/map/MapView';
 import { Marker } from 'react-leaflet';
@@ -112,6 +112,7 @@ const PropertyDetail = () => {
     const [loading, setLoading] = useState(true);
     const [agent, setAgent] = useState(null);
     const [lightbox, setLightbox] = useState({ open: false, index: 0 });
+    const [formStatus, setFormStatus] = useState({ loading: false, success: false, error: null });
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -143,6 +144,39 @@ const PropertyDetail = () => {
             if (agentData) setAgent(agentData);
         }
         setLoading(false);
+    };
+
+    const handleFormSubmit = async (e) => {
+        e.preventDefault();
+        setFormStatus({ loading: true, success: false, error: null });
+
+        const formData = new FormData(e.target);
+        
+        // Honeypot check
+        if (formData.get('fax')) {
+            console.warn('Bot detected via honeypot');
+            setFormStatus({ loading: false, success: true, error: null }); // Fake success for bots
+            return;
+        }
+
+        const data = {
+            full_name: formData.get('full_name'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            message: formData.get('message'),
+            property_id: id,
+            agent_id: property.agent_id,
+            source: 'web'
+        };
+
+        const { error } = await supabase.from('leads').insert([data]);
+
+        if (error) {
+            setFormStatus({ loading: false, success: false, error: 'Ocurrió un error al enviar el mensaje. Reintentalo.' });
+        } else {
+            setFormStatus({ loading: false, success: true, error: null });
+            e.target.reset();
+        }
     };
 
     const openLightbox = (index) => setLightbox({ open: true, index });
@@ -399,6 +433,77 @@ const PropertyDetail = () => {
                                 >
                                     <Mail size={14} /> Enviar Mensaje
                                 </a>
+                            </div>
+
+                            {/* Contact Form */}
+                            <div className="mt-10 pt-10 border-t border-gray-100">
+                                <h5 className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary-950 mb-6 text-center">O envíanos un mensaje</h5>
+                                
+                                {formStatus.success ? (
+                                    <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-sm text-center animate-in fade-in zoom-in duration-300">
+                                        <CheckCircle size={24} className="text-emerald-500 mx-auto mb-3" />
+                                        <p className="text-sm font-bold text-emerald-950 uppercase tracking-tight mb-1">¡Mensaje enviado!</p>
+                                        <p className="text-[10px] text-emerald-700 uppercase tracking-widest leading-relaxed">Te contactaremos a la brevedad.</p>
+                                        <button 
+                                            onClick={() => setFormStatus({ ...formStatus, success: false })}
+                                            className="mt-4 text-[9px] font-bold uppercase tracking-widest text-emerald-900 underline"
+                                        >
+                                            Enviar otro
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <form onSubmit={handleFormSubmit} className="space-y-4">
+                                        {/* Honeypot field - hidden from humans */}
+                                        <div className="hidden" aria-hidden="true">
+                                            <input type="text" name="fax" tabIndex="-1" autoComplete="off" />
+                                        </div>
+
+                                        <div>
+                                            <input 
+                                                type="text" 
+                                                name="full_name" 
+                                                placeholder="Nombre completo *" 
+                                                required
+                                                className="w-full bg-gray-50 border-transparent border-b-gray-100 border p-3 text-xs focus:bg-white focus:border-primary-950 outline-none transition-all placeholder:text-gray-400"
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <input 
+                                                type="email" 
+                                                name="email" 
+                                                placeholder="Email" 
+                                                className="w-full bg-gray-50 border-transparent border-b-gray-100 border p-3 text-xs focus:bg-white focus:border-primary-950 outline-none transition-all placeholder:text-gray-400"
+                                            />
+                                            <input 
+                                                type="tel" 
+                                                name="phone" 
+                                                placeholder="Teléfono *" 
+                                                required
+                                                className="w-full bg-gray-50 border-transparent border-b-gray-100 border p-3 text-xs focus:bg-white focus:border-primary-950 outline-none transition-all placeholder:text-gray-400"
+                                            />
+                                        </div>
+                                        <div>
+                                            <textarea 
+                                                name="message" 
+                                                rows="3" 
+                                                placeholder="¿En qué podemos ayudarte?" 
+                                                className="w-full bg-gray-50 border-transparent border-b-gray-100 border p-3 text-xs focus:bg-white focus:border-primary-950 outline-none transition-all placeholder:text-gray-400 resize-none"
+                                            ></textarea>
+                                        </div>
+                                        
+                                        {formStatus.error && (
+                                            <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest">{formStatus.error}</p>
+                                        )}
+
+                                        <button 
+                                            type="submit" 
+                                            disabled={formStatus.loading}
+                                            className="w-full bg-primary-950 text-white py-4 rounded-sm font-bold uppercase tracking-[0.3em] text-[10px] hover:bg-gold-600 transition-all disabled:opacity-50"
+                                        >
+                                            {formStatus.loading ? 'Enviando...' : 'Solicitar información'}
+                                        </button>
+                                    </form>
+                                )}
                             </div>
 
                             <div className="mt-8 pt-8 border-t border-gray-50">
