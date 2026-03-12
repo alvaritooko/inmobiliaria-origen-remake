@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase, handleSupabaseAuthError } from '../../lib/supabase';
 import { useAuth } from '../auth/AuthContext';
 import { Plus, Edit3, Trash2, Eye, Search, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -27,8 +27,14 @@ const AdminProperties = () => {
         }
 
         const { data, error } = await query;
-        if (error) console.error('Error fetching properties:', error);
-        else setProperties(data || []);
+        if (error) {
+            console.error('Error fetching properties:', error);
+            handleSupabaseAuthError(error);
+            setLoading(false);
+            return;
+        }
+
+        setProperties(data || []);
         setLoading(false);
     };
 
@@ -43,6 +49,7 @@ const AdminProperties = () => {
         const { error } = await supabase.from('properties').delete().eq('id', id);
         if (error) {
             console.error('Error deleting:', error);
+            handleSupabaseAuthError(error);
             alert('Error al eliminar la propiedad');
         } else {
             setProperties(prev => prev.filter(p => p.id !== id));

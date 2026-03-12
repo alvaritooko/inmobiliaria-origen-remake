@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { supabase, handleSupabaseAuthError } from '../../lib/supabase';
 import { useAuth } from '../auth/AuthContext';
 import { Plus, Edit3, Trash2, Loader2, X, UserPlus, Mail, Phone, User, Save, MapPin, ChevronRight } from 'lucide-react';
 
@@ -40,8 +40,12 @@ const AdminAgents = () => {
             .eq('role', 'agent')
             .order('created_at', { ascending: false });
 
-        if (error) console.error('Error fetching agents:', error);
-        else setAgents(data || []);
+        if (error) {
+            console.error('Error fetching agents:', error);
+            handleSupabaseAuthError(error);
+        } else {
+            setAgents(data || []);
+        }
         setLoading(false);
     };
 
@@ -75,6 +79,7 @@ const AdminAgents = () => {
             fetchAgents();
         } catch (err) {
             console.error('Error creating agent:', err);
+            if (err.error) handleSupabaseAuthError(err.error);
             setError(err.message || 'Error al crear el agente');
         } finally {
             setSaving(false);
@@ -96,7 +101,10 @@ const AdminAgents = () => {
                 })
                 .eq('id', editAgent.id);
 
-            if (error) throw error;
+            if (error) {
+                handleSupabaseAuthError(error);
+                throw error;
+            }
 
             setShowEditModal(false);
             setAgents(prev =>
@@ -132,6 +140,7 @@ const AdminAgents = () => {
             setAgents(prev => prev.filter(a => a.id !== agentId));
         } catch (err) {
             console.error('Error deleting agent:', err);
+            if (err.error) handleSupabaseAuthError(err.error);
             alert('Error al eliminar el agente: ' + err.message);
         } finally {
             setDeleting(false);
@@ -146,6 +155,7 @@ const AdminAgents = () => {
 
         if (error) {
             console.error('Error updating agent:', error);
+            handleSupabaseAuthError(error);
             alert('Error al actualizar el agente');
         } else {
             setAgents(prev =>

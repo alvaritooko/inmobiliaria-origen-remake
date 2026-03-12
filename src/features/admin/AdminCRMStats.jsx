@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase, handleSupabaseAuthError } from '../../lib/supabase';
 import {
     Building2, Users, TrendingUp, CheckCircle, BarChart3, Clock, MessageSquare, DollarSign
 } from 'lucide-react';
@@ -98,6 +98,10 @@ const AdminCRMStats = () => {
                     .select('*')
                     .order('created_at', { ascending: false })
             ]);
+
+            if (propRes.error) handleSupabaseAuthError(propRes.error);
+            if (agentRes.error) handleSupabaseAuthError(agentRes.error);
+            if (leadRes.error) handleSupabaseAuthError(leadRes.error);
 
             if (propRes.data) setProperties(propRes.data);
             if (agentRes.data) setAgents(agentRes.data);

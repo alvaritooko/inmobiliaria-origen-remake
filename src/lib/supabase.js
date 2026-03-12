@@ -3,9 +3,36 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-
-
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+// Helper: detect and handle auth/session errors from Supabase responses
+export const handleSupabaseAuthError = (error, { redirect = true } = {}) => {
+    if (!error) return
+
+    const message = (error.message || '').toLowerCase()
+    const status = error.status || error.code
+
+    const isAuthError =
+        status === 401 ||
+        status === 403 ||
+        message.includes('invalid refresh token') ||
+        message.includes('refresh token not found') ||
+        message.includes('invalid jwt') ||
+        message.includes('jwt expired') ||
+        message.includes('session not found')
+
+    if (!isAuthError) return
+
+    try {
+        supabase.auth.signOut()
+    } catch (e) {
+        console.error('[Supabase] Error during forced signOut after auth error:', e)
+    } finally {
+        if (redirect && typeof window !== 'undefined') {
+            window.location.href = '/login'
+        }
+    }
+}
 
 // Helper: get public URL for a file in storage
 export const getPublicUrl = (bucket, path) => {

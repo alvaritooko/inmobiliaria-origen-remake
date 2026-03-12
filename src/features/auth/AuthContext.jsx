@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { supabase } from '../../lib/supabase'
+import { supabase, handleSupabaseAuthError } from '../../lib/supabase'
 
 const AuthContext = createContext({})
 
@@ -68,7 +68,10 @@ export const AuthProvider = ({ children }) => {
             email,
             password,
         })
-        if (error) throw error
+        if (error) {
+            handleSupabaseAuthError(error, { redirect: false })
+            throw error
+        }
         return data
     }
 

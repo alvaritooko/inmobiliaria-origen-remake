@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase, handleSupabaseAuthError } from '../../lib/supabase';
 import { useAuth } from '../auth/AuthContext';
 import { 
     MessageSquare, Mail, Phone, Calendar, Search, Filter, 
@@ -57,7 +57,12 @@ const AdminLeads = () => {
             .in('role', ['admin', 'agent'])
             .order('full_name');
         
-        if (!error && data) setAgents(data);
+        if (error) {
+            handleSupabaseAuthError(error);
+            return;
+        }
+
+        if (data) setAgents(data);
     };
 
     const fetchLeads = async () => {
@@ -71,7 +76,13 @@ const AdminLeads = () => {
             `)
             .order('created_at', { ascending: false });
 
-        if (!error && data) setLeads(data);
+        if (error) {
+            handleSupabaseAuthError(error);
+            setLoading(false);
+            return;
+        }
+
+        if (data) setLeads(data);
         setLoading(false);
     };
 
@@ -85,7 +96,12 @@ const AdminLeads = () => {
             .eq('lead_id', leadId)
             .order('created_at', { ascending: false });
         
-        if (!error && data) setNotes(data);
+        if (error) {
+            handleSupabaseAuthError(error);
+            return;
+        }
+
+        if (data) setNotes(data);
     };
 
     const addNote = async () => {
@@ -105,7 +121,9 @@ const AdminLeads = () => {
             `)
             .single();
 
-        if (!error && data) {
+        if (error) {
+            handleSupabaseAuthError(error);
+        } else if (data) {
             setNotes([data, ...notes]);
             setNewNote('');
         }
@@ -118,7 +136,12 @@ const AdminLeads = () => {
             .update({ agent_id: newAgentId })
             .eq('id', leadId);
 
-        if (!error) {
+        if (error) {
+            handleSupabaseAuthError(error);
+            return;
+        }
+
+        {
             setLeads(leads.map(l => l.id === leadId ? { 
                 ...l, 
                 agent_id: newAgentId,
@@ -146,12 +169,15 @@ const AdminLeads = () => {
             .update(updateData)
             .eq('id', id);
 
-        if (!error) {
-            setLeads(leads.map(l => l.id === id ? { ...l, ...updateData } : l));
-            setEditingFinancials(null);
-            if (selectedLead?.id === id) {
-                setSelectedLead({ ...selectedLead, ...updateData });
-            }
+        if (error) {
+            handleSupabaseAuthError(error);
+            return;
+        }
+
+        setLeads(leads.map(l => l.id === id ? { ...l, ...updateData } : l));
+        setEditingFinancials(null);
+        if (selectedLead?.id === id) {
+            setSelectedLead({ ...selectedLead, ...updateData });
         }
     };
 
@@ -163,11 +189,12 @@ const AdminLeads = () => {
             .delete()
             .eq('id', id);
 
-        if (!error) {
+        if (error) {
+            handleSupabaseAuthError(error);
+            alert('Error al eliminar el lead');
+        } else {
             setLeads(leads.filter(l => l.id !== id));
             if (selectedLead?.id === id) setSelectedLead(null);
-        } else {
-            alert('Error al eliminar el lead');
         }
     };
 
