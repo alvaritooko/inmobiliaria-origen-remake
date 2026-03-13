@@ -298,8 +298,8 @@ const Explore = () => {
             <Navbar />
 
             {/* Top Bar — glass-morphism matching Home design */}
-            <div className="pt-20 glass-morphism text-primary-950 px-6 py-5 z-30 flex-shrink-0 border-b border-white/10">
-                <div className="max-w-[1920px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="pt-20 glass-morphism text-primary-950 px-6 py-5 z-30 flex-shrink-0">
+                <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <MapIcon size={18} className="text-gold-600" />
                         <h1 className="text-lg font-display font-light uppercase tracking-[0.2em] text-primary-950">

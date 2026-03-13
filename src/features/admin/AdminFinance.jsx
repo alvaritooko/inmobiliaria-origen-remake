@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { 
     DollarSign, TrendingUp, PieChart as PieChartIcon, 
     BarChart3, ArrowUpRight, ArrowDownRight, Users, Building2,
-    Download, FileText, Printer
+    Printer
 } from 'lucide-react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -72,36 +72,6 @@ const AdminFinance = () => {
             });
         }
         setLoading(false);
-    };
-
-    const downloadCSV = () => {
-        const closedLeads = stats.rawLeads.filter(l => l.status === 'closed');
-        const headers = ["Fecha", "Cliente", "Agente", "Valor Venta", "Comision %", "Monto Comision"];
-        const rows = closedLeads.map(l => {
-            const val = Number(l.deal_value) || 0;
-            const pct = Number(l.commission_percentage) || 0;
-            const comm = val * (pct / 100);
-            return [
-                new Date(l.created_at).toLocaleDateString(),
-                l.full_name,
-                l.agent?.full_name || "N/A",
-                val,
-                pct,
-                comm
-            ];
-        });
-
-        const csvContent = "data:text/csv;charset=utf-8," 
-            + headers.join(",") + "\n"
-            + rows.map(r => r.join(",")).join("\n");
-
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `reporte_financiero_origen_${new Date().toISOString().split('T')[0]}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
     };
 
     const downloadPDF = () => {
@@ -184,12 +154,6 @@ const AdminFinance = () => {
                     </p>
                 </div>
                 <div className="flex gap-3">
-                    <button 
-                        onClick={downloadCSV}
-                        className="flex items-center gap-2 bg-white border border-gray-100 text-primary-950 px-4 py-2 rounded-sm text-[10px] uppercase font-bold tracking-widest hover:bg-gray-50 transition-colors"
-                    >
-                        <Download size={14} /> CSV
-                    </button>
                     <button 
                         onClick={downloadPDF}
                         className="flex items-center gap-2 bg-primary-950 text-white px-4 py-2 rounded-sm text-[10px] uppercase font-bold tracking-widest hover:bg-primary-900 transition-all shadow-lg shadow-primary-950/20"

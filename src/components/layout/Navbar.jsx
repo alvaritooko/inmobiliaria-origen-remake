@@ -7,7 +7,7 @@ const Navbar = () => {
     const { user, profile } = useAuth();
 
     return (
-        <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md">
             <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                 <Link to="/" className="flex items-center gap-3 cursor-pointer">
                     <img src="/origen_logo_color.png" alt="Origen Inmobiliaria" className="h-14 w-auto" />
